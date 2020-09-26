@@ -1,0 +1,141 @@
+---
+title: "week 2 assignment"
+author: "LevanWR"
+date: "9/26/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+we will use following libraries:lubridate, dplyr and lattice.
+
+
+Code for reading in the dataset and/or processing the data:
+
+```r
+data<-read.csv("../repro/week2/activity.csv")
+
+#add weekdays to data
+data$date<-ymd(data$date)
+data$weekdays<-weekdays(data$date)
+
+#clear the data from missing values and add weekdays
+data_clear<-na.omit(data)
+data_clear$date<-ymd(data_clear$date)
+data_clear$weekdays<-weekdays(data_clear$date)
+
+
+#steps each day 
+eachday_steps<-data.frame(tapply(data$steps, factor(data$date), sum, na.rm=TRUE))
+
+#average steps daily
+eachday_steps_average<-data.frame(tapply(data$steps, factor(data$interval ), mean, na.rm=TRUE))
+
+#separate weekend and weekdays
+data_clear$weekPartition<-data_clear$weekdays
+t<-which(data_clear$weekdays=="Saturday"|data_clear$weekdays=="Sunday")
+tt<-which(data_clear$weekdays!="Saturday"&data_clear$weekdays!="Sunday")
+data_clear$weekPartition[t]<-"weekend"
+data_clear$weekPartition[tt]<-"weekdays"
+```
+Histogram of the total number of steps taken each day
+
+
+```r
+hist(eachday_steps$tapply.data.steps..factor.data.date...sum..na.rm...TRUE., xlab = "number of steps", main="Histogram of the total number of steps taken each day")
+```
+
+![plot of chunk unnamed-chunk-22](figure/unnamed-chunk-22-1.png)
+ 
+ 
+ Mean and median number of steps taken each day
+
+```r
+mn<-mean(eachday_steps$tapply.data.steps..factor.data.date...sum..na.rm...TRUE., na.rm = TRUE )
+md<-median(eachday_steps$tapply.data.steps..factor.data.date...sum..na.rm...TRUE., na.rm = TRUE)
+print(mn)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
+print(md)
+```
+
+```
+## [1] 10395
+```
+
+
+Time series plot of the average number of steps taken
+
+```r
+eachday_steps_average$interval<-unique(data$interval)
+plot(eachday_steps_average$interval,eachday_steps_average$tapply.data.steps..factor.data.interval...mean..na.rm...TRUE. , ylab = "averge steps ", main = "Time series plot of the average number of steps taken", type = "l", xlab = "days")
+```
+
+![plot of chunk unnamed-chunk-24](figure/unnamed-chunk-24-1.png)
+
+The 5-minute interval that, on average, contains the maximum number of steps
+
+```r
+maximum<-max(eachday_steps_average$tapply.data.steps..factor.data.interval...mean..na.rm...TRUE.)
+adress<-which(eachday_steps_average==maximum)
+eachday_steps_average$interval[adress]
+```
+
+```
+## [1] 835
+```
+
+#Code to describe and show a strategy for imputing missing data
+
+
+##there are missing values in steps, so if we calculate length of steps variable with missing values and without it, difference will give us number of that missing values.  
+
+
+```r
+length(data$steps)-length(na.omit(data$steps))
+```
+
+```
+## [1] 2304
+```
+
+Histogram of the total number of steps taken each day after missing values are imputed
+
+```r
+steps_eachday_clear<-tapply(data_clear$steps, factor(data_clear$date), sum)
+hist(steps_eachday_clear, main="Histogram of the total number of steps taken each day after missing values are imputed", xlab = "steps each day total")
+```
+
+![plot of chunk unnamed-chunk-27](figure/unnamed-chunk-27-1.png)
+Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+
+```r
+xyplot(data = data_clear, steps~interval|weekPartition)
+```
+
+![plot of chunk unnamed-chunk-28](figure/unnamed-chunk-28-1.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
